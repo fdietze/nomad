@@ -1,6 +1,5 @@
 package nomad.common
 
-import minitest._
 import monix.execution.ExecutionModel.SynchronousExecution
 import monix.execution.Scheduler
 import monix.execution.schedulers.TrampolineScheduler
@@ -10,6 +9,8 @@ import org.scalajs.dom.ext.LocalStorage
 import collection.mutable
 import org.scalajs.dom.window.localStorage
 import cats.implicits._
+import nomad.{NomadTestSuite, instances}
+import nomad.instances.monixInstance
 
 trait LocalStorageMock {
 
@@ -55,7 +56,7 @@ trait LocalStorageMock {
   implicit val scheduler = TrampolineScheduler(Scheduler.global, SynchronousExecution)
 }
 
-object LocalStorageSpec extends SimpleTestSuite with LocalStorageMock {
+class LocalStorageSuite extends NomadTestSuite with LocalStorageMock {
 
   test("LocalStorage") {
     window.localStorage.clear()
@@ -63,50 +64,50 @@ object LocalStorageSpec extends SimpleTestSuite with LocalStorageMock {
     val key = "banana"
     val triggeredHandlerEvents = mutable.ArrayBuffer.empty[Option[String]]
 
-    assertEquals(localStorage.getItem(key), null)
+    assert(localStorage.getItem(key) == null)
 
     import nomad.instances.{Monix => monixInstance}
-    val storageHandler = Storage.localStorage(monixInstance.replaySubject, monixInstance.observer, monixInstance.observable, monixInstance.cancelable).handler(key)
+    val storageHandler = Storage.localStorage(instances.monixInstance.replaySubject, instances.monixInstance.observer, instances.monixInstance.observable, instances.monixInstance.cancelable).handler(key)
     storageHandler.foreach { e => triggeredHandlerEvents += e }
-    assertEquals(localStorage.getItem(key), null)
-    assertEquals(triggeredHandlerEvents.toList, List(None))
+    assert(localStorage.getItem(key) == null)
+    assert(triggeredHandlerEvents.toList == List(None))
 
     storageHandler.onNext(Some("joe"))
-    assertEquals(localStorage.getItem(key), "joe")
-    assertEquals(triggeredHandlerEvents.toList, List(None, Some("joe")))
+    assert(localStorage.getItem(key) == "joe")
+    assert(triggeredHandlerEvents.toList == List(None == Some("joe")))
 
     var initialValue: Option[String] = null
     storageHandler.foreach {
       initialValue = _
     }
-    assertEquals(initialValue, Some("joe"))
+    assert(initialValue == Some("joe"))
 
     storageHandler.onNext(None)
-    assertEquals(localStorage.getItem(key), null)
-    assertEquals(triggeredHandlerEvents.toList, List(None, Some("joe"), None))
+    assert(localStorage.getItem(key) == null)
+    assert(triggeredHandlerEvents.toList == List(None, Some("joe") == None))
 
     // simulate localStorage.setItem(key, "split") from another window
     dispatchStorageEvent(key, newValue = "split", null)
-    assertEquals(localStorage.getItem(key), "split")
-    assertEquals(triggeredHandlerEvents.toList, List(None, Some("joe"), None, Some("split")))
+    assert(localStorage.getItem(key) == "split")
+    assert(triggeredHandlerEvents.toList == List(None, Some("joe"), None, Some("split")))
 
     // simulate localStorage.removeItem(key) from another window
     dispatchStorageEvent(key, null, "split")
-    assertEquals(localStorage.getItem(key), null)
-    assertEquals(triggeredHandlerEvents.toList, List(None, Some("joe"), None, Some("split"), None))
+    assert(localStorage.getItem(key) == null)
+    assert(triggeredHandlerEvents.toList == List(None, Some("joe"), None, Some("split"), None))
 
     // only trigger handler if value changed
     storageHandler.onNext(None)
-    assertEquals(localStorage.getItem(key), null)
-    assertEquals(triggeredHandlerEvents.toList, List(None, Some("joe"), None, Some("split"), None))
+    assert(localStorage.getItem(key) == null)
+    assert(triggeredHandlerEvents.toList == List(None, Some("joe"), None, Some("split"), None))
 
     storageHandler.onNext(Some("rhabarbar"))
-    assertEquals(localStorage.getItem(key), "rhabarbar")
-    assertEquals(triggeredHandlerEvents.toList, List(None, Some("joe"), None, Some("split"), None, Some("rhabarbar")))
+    assert(localStorage.getItem(key) == "rhabarbar")
+    assert(triggeredHandlerEvents.toList == List(None, Some("joe"), None, Some("split"), None, Some("rhabarbar")))
 
     // localStorage.clear() from another window
     dispatchStorageEvent(null, null, null)
-    assertEquals(localStorage.getItem(key), null)
-    assertEquals(triggeredHandlerEvents.toList, List(None, Some("joe"), None, Some("split"), None, Some("rhabarbar"), None))
+    assert(localStorage.getItem(key) == null)
+    assert(triggeredHandlerEvents.toList == List(None, Some("joe"), None, Some("split"), None, Some("rhabarbar"), None))
   }
 }

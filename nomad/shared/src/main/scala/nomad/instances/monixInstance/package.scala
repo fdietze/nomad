@@ -2,11 +2,11 @@ package nomad.instances
 
 import cats.Eq
 import monix.execution.{Cancelable, Scheduler}
-import monix.reactive.subjects.{ReplaySubject, Subject}
+import monix.reactive.subjects.ReplaySubject
 import monix.reactive.{Observable, Observer}
 import nomad.{Sink, Source}
 
-object Monix {
+package object monixInstance {
   implicit def cancelable: nomad.Cancelable[monix.execution.Cancelable] = (c: Cancelable) => c.cancel()
 
   implicit def observer: Sink[Observer] = new Sink[Observer] {

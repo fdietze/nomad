@@ -4,8 +4,8 @@ lazy val commonSettings = Seq(
   name         := "nomad",
   version      := "master-SNAPSHOT",
 
-  scalaVersion := "2.12.4",
-  crossScalaVersions := Seq("2.11.12", "2.12.4"),
+  scalaVersion := "2.12.5",
+  crossScalaVersions := Seq("2.11.12", "2.12.5"),
 
   resolvers ++= (
     ("jitpack" at "https://jitpack.io") ::
@@ -46,8 +46,7 @@ lazy val commonSettings = Seq(
   // """,
 )
 
-val catsVersion = "1.0.1"
-val catsEffectVersion = "0.8"
+val catsVersion = "1.1.0"
 
 lazy val nomad = crossProject
   .enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin)
@@ -56,15 +55,19 @@ lazy val nomad = crossProject
     libraryDependencies ++= Seq(
       "com.github.mpilquist" %% "simulacrum" % "0.12.0" % "provided",
       "org.typelevel" %%% "cats-core" % catsVersion,
-      // "org.typelevel" %%% "cats-effect" % catsEffectVersion,
-      "org.scala-js" %%% "scalajs-dom" % "0.9.4",
+      "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
+      "org.typelevel" %% "discipline" % "0.9.0",
+
       "io.monix" %%% "monix" % "3.0.0-M3",
-      "io.monix" %%% "minitest" % "2.1.1" % "test",
+      "com.lihaoyi" %%% "scalarx" % "0.3.2"
     ),
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full),
-    testFrameworks += new TestFramework("minitest.runner.Framework")
   )
   .jsSettings(
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "0.9.5"
+    ),
     requiresDOM in Test := true,
     useYarn := true,
     scalacOptions += "-P:scalajs:sjsDefinedByDefault",

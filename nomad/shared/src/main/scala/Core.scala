@@ -1,7 +1,6 @@
 package nomad
 
 import cats._
-import cats.arrow.Profunctor
 import simulacrum._
 
 @typeclass
@@ -28,6 +27,12 @@ trait Sink[M[_]] {
 //}
 
 trait Subject[SUBJECT[_],SINK[_],SOURCE[_]] { // TODO: extends Profunctor[SUBJECT] {
+  def source[A](subject:SUBJECT[A]):SOURCE[A]
+  def sink[A](subject:SUBJECT[A]):SINK[A]
+  def create[A](seed: A): SUBJECT[A]
+}
+
+trait Signal[SUBJECT[_],SINK[_],SOURCE[_]] {
   def source[A](subject:SUBJECT[A]):SOURCE[A]
   def sink[A](subject:SUBJECT[A]):SINK[A]
   def create[A](seed: A): SUBJECT[A]
